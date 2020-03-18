@@ -49,7 +49,7 @@ function displaySchedule() {
 
 // updates the present time block on the hour
 function updateHour() {
-    if (moment().minute() === 00 && moment().second() === 0) {
+    if (moment().minute() === 0 && moment().second() === 0) {
         // changes the current time block from present to past
         $(`textarea[data-rowtime=${currentRow}]`).removeClass("present");
         $(`textarea[data-rowtime=${currentRow}]`).addClass("past");
