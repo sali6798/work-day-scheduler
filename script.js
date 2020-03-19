@@ -2,9 +2,6 @@ $(document).ready(function () {
     var schedule = {};
     var currentRow;
 
-    // displays current date at top of the page in format (Monday, March 16th)
-    $("#currentDay").text(moment().format("dddd, MMMM Do"));
-
     // add and save event to schedule when user clicks save
     function addEvent() {
         // gets the previous sibling element of the save button (the textarea)
@@ -48,8 +45,15 @@ $(document).ready(function () {
         });
     }
 
-    // updates the present time block on the hour
-    function updateHour() {
+    function clearSchedule() {
+        localStorage.removeItem("schedule");
+        schedule = {};
+        displaySchedule();
+    }
+
+    // updates the present time block on the hour and clears the schedule
+    // at the start of a new day (midnight)
+    function updateTime() {
         if (moment().minute() === 0 && moment().second() === 0) {
             // changes the current time block from present to past
             $(`textarea[data-rowtime=${currentRow}]`).removeClass("present");
@@ -64,6 +68,14 @@ $(document).ready(function () {
                 currentRow = next;
             }
         }
+
+        // clear the schedule at midnight for the new day 
+        // and update date at the top of the page
+        if (moment().hour() === 0 && moment().minute() === 0) {
+            // displays current date at top of the page in format (Monday, March 16th)
+            $("#currentDay").text(moment().format("dddd, MMMM Do"));
+            clearSchedule();
+        }
     }
 
     // load schedule from local storage
@@ -72,17 +84,15 @@ $(document).ready(function () {
         if (savedSchedule !== null) {
             schedule = savedSchedule;
         }
+
+        // displays current date at top of the page in format (Monday, March 16th)
+        $("#currentDay").text(moment().format("dddd, MMMM Do"));
+
         // checks the time every second to see if
         // time block needs to be updated
-        setInterval(updateHour, 1000);
+        setInterval(updateTime, 1000);
         displaySchedule();
 
-    }
-
-    function clearSchedule() {
-        localStorage.removeItem("schedule");
-        schedule = {};
-        displaySchedule();
     }
 
     $(".saveBtn").click(addEvent);
