@@ -2,20 +2,6 @@ $(document).ready(function () {
     var schedule = {};
     var currentRow;
 
-    // add and save event to schedule when user clicks save
-    function addEvent() {
-        // gets the previous sibling element of the save button (the textarea)
-        var textarea = $(this).prev();
-        // gets data-rowtime attr, the time associated with the block
-        var row = textarea.data("rowtime");
-        // add user input (event) to schedule
-        schedule[row] = textarea.val();
-
-        // save schedule in localStorage
-        localStorage.setItem("schedule", JSON.stringify(schedule));
-        displaySchedule();
-    }
-
     // display the schedule for the day
     function displaySchedule() {
         $("textarea").each(function (i, element) {
@@ -26,7 +12,8 @@ $(document).ready(function () {
             var event = schedule[row];
             // set the textarea value
             $(element).val(event);
-
+            // remove all classes
+            $(element).removeClass();
             // if the current hour is the same as 
             // the row (block time), add 'present' class
             if (moment().hour() === parseInt(row)) {
@@ -45,6 +32,20 @@ $(document).ready(function () {
         });
     }
 
+    // add and save event to schedule when user clicks save
+    function addEvent() {
+        // gets the previous sibling element of the save button (the textarea)
+        var textarea = $(this).prev();
+        // gets data-rowtime attr, the time associated with the block
+        var row = textarea.data("rowtime");
+        // add user input (event) to schedule
+        schedule[row] = textarea.val();
+
+        // save schedule in localStorage
+        localStorage.setItem("schedule", JSON.stringify(schedule));
+        displaySchedule();
+    }
+
     function clearSchedule() {
         localStorage.removeItem("schedule");
         schedule = {};
@@ -55,26 +56,19 @@ $(document).ready(function () {
     // at the start of a new day (midnight)
     function updateTime() {
         if (moment().minute() === 0 && moment().second() === 0) {
-            // changes the current time block from present to past
-            $(`textarea[data-rowtime=${currentRow}]`).removeClass("present");
-            $(`textarea[data-rowtime=${currentRow}]`).addClass("past");
-
-            var next = currentRow + 1;
-            // checks if the next time block is 5pm or earlier
-            if (next <= 17) {
-                // sets the next time block (new current) from future to present
-                $(`textarea[data-rowtime=${next}]`).removeClass("future");
-                $(`textarea[data-rowtime=${next}]`).addClass("present");
-                currentRow = next;
+            var currentHour = moment().hour();
+            // only need to update timeblock classes (past, present, future)
+            // from 9am to 5pm but needs to check at 6pm, so the 5pm
+            // block will be changed to past
+            if (currentHour >= 9 && currentHour <= 18) {
+                displaySchedule();
             }
-        }
-
-        // clear the schedule at midnight for the new day 
-        // and update date at the top of the page
-        if (moment().hour() === 0 && moment().minute() === 0) {
-            // displays current date at top of the page in format (Monday, March 16th)
-            $("#currentDay").text(moment().format("dddd, MMMM Do"));
-            clearSchedule();
+            // clear the schedule at midnight for the new day 
+            // and update date at the top of the page
+            if (currentHour === 0) {
+                $("#currentDay").text(moment().format("dddd, MMMM Do"));
+                clearSchedule();
+            }
         }
     }
 
